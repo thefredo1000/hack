@@ -1,24 +1,36 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>
-      Eye Test
+      Doctor Eye
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-card>
-      <ion-card-header>
-        <ion-card-title>Results</ion-card-title>
-      </ion-card-header>
-    <img src= "https://thingshealth.com/wp-content/uploads/2017/03/cornea.jpg">
+    <img src= "{{image}}">
 
-    <ion-card-content>
-      poop
+    <ion-card-content *ngIf="isError" style="text-align: left;"> 
+        <ion-card-title>Error</ion-card-title>
+        There was a problem processing your image, try to aim the camera more towards the eye and take the picture landscape.
     </ion-card-content>
+
+    <ion-card-content *ngIf="(result$ | async) && (isError ==false && isOpen == true );let resultk" style="text-align: left;"> 
+        <!-- <ion-label>{{result.Results}}</ion-label>
+        <ion-label>{{result.Threshold}}</ion-label> -->
+        <ion-card-subtitle>Result</ion-card-subtitle>
+        <ion-card-title>{{result}}</ion-card-title>
+        <ion-card-subtitle>Threshold</ion-card-subtitle>
+        <ion-card-title>{{percentage | percent }}</ion-card-title>
+    </ion-card-content>
+
     </ion-card>
-    <ion-button size="large" >
+    <ion-button size="large" (click)="open()">
       <ion-icon name="camera"> </ion-icon>
       Take Photo
     </ion-button>
+    <ion-button  (click)="error()">
+        Debug
+    </ion-button>
+      
 </ion-content>
