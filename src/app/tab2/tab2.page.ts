@@ -3,13 +3,13 @@ import { AngularFireStorage, AngularFireUploadTask } from '@angular/fire/storage
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { Platform, LoadingController } from '@ionic/angular';
 import * as firebaseRef from 'firebase';
-import { AngularFirestore,  AngularFirestoreDocument } from '@angular/fire/firestore';
+import { AngularFirestore, AngularFirestoreDocument } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { filter, tap, map } from 'rxjs/operators';
 import { TapticEngine } from '@ionic-native/taptic-engine/ngx';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { PercentPipe } from '@angular/common';
-// import { Storage } from '@ionic/storage';
+import { Storage } from '@ionic/storage';
 
 
 @Component({
@@ -53,29 +53,20 @@ export class Tab2Page {
 
   image: string;
   constructor(
-    // public storage: Storage,
+    public storage: Storage,
     private firestore: AngularFirestore,
     private platform: Platform,
     public camera: Camera,
     public loadingController: LoadingController,
-    public taptic : TapticEngine
-    ) {
-      this.image = "./assets/eye-disease.png"
-      
-      // set a key/value
-      
-      
-      // storage.get('name').then((val) => {
-      //   val.array.forEach(element => {
-      //     console.log(element)
-      //   });
-      // });
+    public taptic: TapticEngine
+  ) {
+    this.image = "./assets/eye-disease.png"
   }
 
-  error(){
+  error() {
     this.isError = !this.isError;
   }
-  async listenToData(key){
+  async listenToData(key) {
     const loading = await this.loadingController.create({
       message: 'Processing Image',
     });
@@ -84,27 +75,23 @@ export class Tab2Page {
     this.collectionRef = this.firestore.collection("Results").doc(key);
     this.result$ = this.collectionRef.valueChanges().pipe(
       filter(data => !!data),
-        tap((data) => {
-          loading.dismiss();
-          this.result = data.Results
-          this.percentage = data.Threshold
-         // this.percentage = (Math.round(this.percentage * 100)) + "%"
-          if (this.result == "404" || this.result == ""){
-            this.isError = true;
-          }
-          // else {
-          //   this.storage.set(key, {
-          //     Threshold: data.Threshold,
-          //     Result: data.Results
-          //   });
-          // }
-        }),
+      tap((data) => {
+        loading.dismiss();
+
+        this.result = data.Results;
+
+        if (this.result === '404') {
+          this.isError = true;
+          return;
+        }
+        this.percentage = data.Threshold;
+
+        this.storage.set(key, data).catch(e => {
+          alert(e);
+        });
+
+      }),
     );
-    // this.value$ = this.collectionRef.valueChanges()
-    // this.value$.subscribe(data=>{
-    //   this.result = data.Results
-    //   this.percentage = data.Threshold
-    // })
   }
   open() {
     this.isOpen = false;
@@ -126,15 +113,15 @@ export class Tab2Page {
       loading.dismiss();
       this.listenToData(docID);
       this.isOpen = true;
-      // ESTO ES UN DESMADRE PERO DE AQUI EN ADELANTE SOLO TRABAJARA EN COSAS ESTETICAS
+
       this.taptic.impact({
-        style: "heavy" // light | medium | heavy
+        style: "heavy" 
       });
       this.title = "Results";
       this.result = "DISEASE_NAME"
       this.percentage = "PERCENTAGE"
     }).catch(err => {
-      this.error ()
+      this.error();
     });
   }
 
@@ -162,18 +149,14 @@ export class Tab2Page {
       });
     })
   };
+
+
   postPicture(url, path, key) {
 
     return new Promise((resolve, reject) => {
       const storageRef = firebaseRef.storage().ref().child(path).child(key);
-      
-      // this.doc = {
-      //   key: {
-      //     disease : "mi amor",
-      //     percentage: 3
-      //   }
-      // }
-      // this.firestore.collection("Results").add(this.doc)
+
+
       if (this.platform.is('ios')) {
         let parseUpload = storageRef.putString(url, firebaseRef.storage.StringFormat.DATA_URL);
         parseUpload.then(() => {
